@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photon AI Studio</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><img src="icon.svg" alt=""><span>Photon AI Studio</span></div>
+  <div class="chips">
+    <span class="chip" id="chip-photon" data-i18n-title="chip.photon"><i></i>Photon</span>
+    <span class="chip" id="chip-engine" data-i18n-title="chip.engine"><i></i>AI</span>
+  </div>
+  <button class="icon-btn" id="btn-settings" data-i18n-title="settings.title" aria-label="Settings">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
+</header>
+
+<!-- ============ SETUP WIZARD ============ -->
+<section id="view-setup" class="view" hidden>
+  <div class="wizard-steps"><span data-step="1" class="on">1</span><span data-step="2">2</span><span data-step="3">3</span></div>
+
+  <div class="wstep" id="ws-1">
+    <h2 data-i18n="setup.welcome"></h2>
+    <p class="muted" data-i18n="setup.intro"></p>
+    <div class="card" id="hw-card"><div class="spinner"></div><span data-i18n="setup.checking"></span></div>
+    <div class="row end"><button class="btn primary" id="ws1-next" disabled data-i18n="common.next"></button></div>
+    <details class="alt"><summary data-i18n="setup.useExisting"></summary>
+      <p class="muted small" data-i18n="setup.useExistingHelp"></p>
+      <div class="field"><label data-i18n="settings.comfyUrl"></label><input id="ext-url" value="http://127.0.0.1:8188"></div>
+      <button class="btn" id="ext-connect" data-i18n="setup.connect"></button> <span id="ext-msg" class="small"></span>
+    </details>
+  </div>
+
+  <div class="wstep" id="ws-2" hidden>
+    <h2 data-i18n="setup.choose"></h2>
+    <div id="packs"></div>
+    <div class="field"><label data-i18n="setup.installDir"></label><input id="install-dir"><div class="hint small" id="disk-hint"></div></div>
+    <details class="alt"><summary data-i18n="setup.reuse"></summary>
+      <p class="muted small" data-i18n="setup.reuseHelp"></p>
+      <div class="field"><input id="reuse-dir" placeholder="D:\ComfyUI\models"></div>
+    </details>
+    <div class="total" id="total-size"></div>
+    <div class="row between"><button class="btn" id="ws2-back" data-i18n="common.back"></button><button class="btn primary" id="ws2-install" data-i18n="setup.install"></button></div>
+  </div>
+
+  <div class="wstep" id="ws-3" hidden>
+    <h2 data-i18n="setup.installing"></h2>
+    <p class="muted small" data-i18n="setup.installingHelp"></p>
+    <ol class="steps" id="inst-steps"></ol>
+    <div class="dl" id="inst-dl" hidden><div class="dl-name"></div><div class="bar"><i></i></div><div class="dl-meta small muted"></div></div>
+    <div class="err" id="inst-err" hidden></div>
+    <details class="alt"><summary data-i18n="setup.showLog"></summary><pre id="inst-log"></pre></details>
+    <div class="row between"><button class="btn" id="inst-cancel" data-i18n="common.cancel"></button><button class="btn primary" id="inst-retry" hidden data-i18n="setup.retry"></button></div>
+  </div>
+</section>
+
+<!-- ============ MAIN ============ -->
+<section id="view-main" class="view" hidden>
+  <div class="docbar">
+    <select id="doc-select" aria-label="Document"></select>
+    <select id="model-select" data-i18n-title="common.model" aria-label="Model"></select>
+  </div>
+  <div class="notice" id="notice" hidden></div>
+
+  <nav class="tabs">
+    <button data-tab="gen" class="on" data-i18n="tab.gen"></button>
+    <button data-tab="neural" data-i18n="tab.neural"></button>
+    <button data-tab="tools" data-i18n="tab.tools"></button>
+  </nav>
+
+  <!-- Generative -->
+  <div class="tab" id="tab-gen">
+    <article class="tool">
+      <h3><span class="ico">✦</span><span data-i18n="genfill.title"></span></h3>
+      <p class="muted small" data-i18n="genfill.help"></p>
+      <div class="prompt-box">
+        <textarea id="gf-prompt" rows="2" data-i18n-ph="genfill.ph"></textarea>
+        <button class="mini ai-improve" data-for="gf-prompt" data-i18n-title="prompt.improve" hidden>✨</button>
+      </div>
+      <div class="row">
+        <label class="small"><span data-i18n="common.variations"></span>
+          <select id="gf-var"><option>1</option><option selected>3</option><option>4</option></select></label>
+        <span class="grow"></span>
+        <button class="btn" data-run="genfill-remove" data-i18n="genfill.remove"></button>
+        <button class="btn primary" data-run="genfill" data-i18n="common.generate"></button>
+      </div>
+    </article>
+
+    <article class="tool">
+      <h3><span class="ico">⤢</span><span data-i18n="expand.title"></span></h3>
+      <p class="muted small" data-i18n="expand.help"></p>
+      <div class="seg" id="ex-ratio">
+        <button data-v="16:9" class="on">16:9</button><button data-v="9:16">9:16</button><button data-v="4:3">4:3</button><button data-v="3:2">3:2</button><button data-v="1:1">1:1</button><button data-v="pct">+%</button>
+      </div>
+      <div class="row" id="ex-pct-row" hidden><input type="range" id="ex-pct" min="10" max="100" value="25"><span id="ex-pct-v" class="small">25%</span></div>
+      <div class="row">
+        <div class="anchor" id="ex-anchor">
+          <button data-v="topLeft"></button><button data-v="top"></button><button data-v="topRight"></button>
+          <button data-v="left"></button><button data-v="center" class="on"></button><button data-v="right"></button>
+          <button data-v="bottomLeft"></button><button data-v="bottom"></button><button data-v="bottomRight"></button>
+        </div>
+        <div class="grow">
+          <div class="prompt-box"><textarea id="ex-prompt" rows="2" data-i18n-ph="expand.ph"></textarea><button class="mini ai-improve" data-for="ex-prompt" hidden>✨</button></div>
+        </div>
+      </div>
+      <div class="row end"><button class="btn primary" data-run="expand" data-i18n="expand.go"></button></div>
+    </article>
+
+    <article class="tool">
+      <h3><span class="ico">◐</span><span data-i18n="generate.title"></span></h3>
+      <p class="muted small" data-i18n="generate.help"></p>
+      <div class="prompt-box"><textarea id="g-prompt" rows="3" data-i18n-ph="generate.ph"></textarea><button class="mini ai-improve" data-for="g-prompt" hidden>✨</button></div>
+      <div class="row">
+        <label class="small"><span data-i18n="common.variations"></span>
+          <select id="g-var"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+        <label class="small" id="g-z-wrap" hidden><input type="checkbox" id="g-z"> Z-Image Turbo</label>
+        <span class="grow"></span>
+        <button class="btn primary" data-run="generate" data-i18n="common.generate"></button>
+      </div>
+    </article>
+  </div>
+
+  <!-- Neural filters -->
+  <div class="tab" id="tab-neural" hidden>
+    <p class="muted small" data-i18n="neural.help"></p>
+    <div class="field"><label data-i18n="neural.desc"></label><input id="nf-desc" data-i18n-ph="neural.descPh"></div>
+    <div class="filters" id="filters"></div>
+  </div>
+
+  <!-- Tools -->
+  <div class="tab" id="tab-tools" hidden>
+    <article class="tool">
+      <h3><span class="ico">✂</span><span data-i18n="tools.bg"></span></h3>
+      <p class="muted small" data-i18n="tools.bgHelp"></p>
+      <div class="row wrap">
+        <button class="btn primary" data-run="removebg" data-i18n="tools.removeBg"></button>
+        <button class="btn" data-run="select-subject" data-i18n="tools.selSubject"></button>
+        <button class="btn" data-run="select-sky" data-i18n="tools.selSky"></button>
+      </div>
+    </article>
+    <article class="tool">
+      <h3><span class="ico">⬆</span><span data-i18n="tools.sr"></span></h3>
+      <p class="muted small" data-i18n="tools.srHelp"></p>
+      <div class="row">
+        <div class="seg" id="sr-factor"><button data-v="2" class="on">2×</button><button data-v="4">4×</button></div>
+        <span class="grow"></span>
+        <button class="btn primary" data-run="superres" data-i18n="tools.srGo"></button>
+      </div>
+    </article>
+  </div>
+
+  <!-- Job -->
+  <div class="job" id="job" hidden>
+    <div class="row between"><span id="job-step" class="small"></span><button class="mini" id="job-cancel" data-i18n="common.cancel"></button></div>
+    <div class="bar"><i id="job-bar"></i></div>
+    <div class="err" id="job-err" hidden></div>
+    <div class="variants" id="variants"></div>
+    <div class="row end" id="variant-actions" hidden><span class="small muted grow" data-i18n="job.variantHelp"></span><button class="btn" id="keep-variant" data-i18n="job.keep"></button></div>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="view-settings" class="view" hidden>
+  <div class="row between"><h2 data-i18n="settings.title"></h2><button class="btn" id="settings-close" data-i18n="common.close"></button></div>
+
+  <h4 data-i18n="settings.engine"></h4>
+  <div class="field"><label data-i18n="settings.mode"></label>
+    <select id="s-mode"><option value="managed" data-i18n="settings.managed"></option><option value="external" data-i18n="settings.external"></option></select></div>
+  <div class="field" id="s-url-wrap"><label data-i18n="settings.comfyUrl"></label><input id="s-url"></div>
+  <div class="field"><label data-i18n="settings.extraDirs"></label><textarea id="s-extra" rows="2" placeholder="D:\ComfyUI\models"></textarea><div class="hint small" data-i18n="settings.extraHelp"></div></div>
+  <div class="row wrap">
+    <button class="btn" id="s-start" data-i18n="settings.start"></button>
+    <button class="btn" id="s-stop" data-i18n="settings.stop"></button>
+    <button class="btn" id="s-packs" data-i18n="settings.packs"></button>
+    <button class="btn" data-open="engine" data-i18n="settings.openEngine"></button>
+    <button class="btn" data-open="logs" data-i18n="settings.openLogs"></button>
+  </div>
+  <div class="card small" id="s-hw"></div>
+
+  <h4 data-i18n="settings.output"></h4>
+  <div class="field"><label data-i18n="settings.outputDir"></label><input id="s-out"></div>
+  <div class="row"><button class="btn" data-open="output" data-i18n="settings.openOutput"></button></div>
+
+  <h4 data-i18n="settings.prompt"></h4>
+  <div class="field"><label data-i18n="settings.ollamaUrl"></label><input id="s-ollama"><div class="hint small" data-i18n="settings.ollamaHelp"></div></div>
+
+  <h4 data-i18n="settings.other"></h4>
+  <div class="field"><label data-i18n="settings.photonPath"></label><input id="s-photon" placeholder="auto"></div>
+  <label class="small"><input type="checkbox" id="s-stopexit"> <span data-i18n="settings.stopOnExit"></span></label>
+  <div class="row end"><button class="btn primary" id="settings-save" data-i18n="common.save"></button></div>
+  <p class="muted small center" id="about"></p>
+</section>
+
+<div class="toast" id="toast" hidden></div>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

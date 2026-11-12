@@ -1,0 +1,14 @@
+{
+  "name": "photon-ai-studio",
+  "version": "1.0.0",
+  "description": "Local AI tools for Photon Studio: generative fill & expand, generate image, remove background, super resolution and neural filters. Installs its own ComfyUI engine and models.",
+  "main": "src/server.js",
+  "bin": { "photon-ai-studio": "src/server.js" },
+  "scripts": {
+    "start": "node src/server.js",
+    "build": "node build/build.js"
+  },
+  "engines": { "node": ">=22" },
+  "license": "MIT",
+  "private": true
+}
