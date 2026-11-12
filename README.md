@@ -64,7 +64,7 @@ Panel window ──► Photon AI Studio (local server) ──► photon CLI ─�
 ## Install (any PC)
 
 1. Install and open **Photon Studio**. In *Settings → Agents*, enable/install the **CLI** if it isn't already.
-2. Run **PhotonAIStudio.exe**, or from source run `node src/server.js` (Node 22+).
+2. Download the executable for your OS from the [latest release](https://github.com/Alex-ZeroGLabs/photon-ai-studio/releases/latest) and run it (Windows: `PhotonAIStudio-windows-x64.exe`, macOS: `PhotonAIStudio-macos-arm64`, Linux: `PhotonAIStudio-linux-x64`). Or run from source with `node src/server.js` (Node 22+).
 3. On first run:
    - **Hardware check**: GPU/VRAM, RAM and disk give a rating of *Excellent / Good / Limited / Not recommended*, plus recommended packs.
    - **Pick model packs**: Base (required, ~8.4 GB), Style (IPAdapter, 3.4 GB), Anime (Illustrious XL, 6.9 GB), Z-Image Turbo (~19.4 GB, 12 GB+ VRAM).
@@ -117,6 +117,7 @@ build/build.js  single-executable builder (Node SEA)
 node build/build.js
 ```
 Produces `dist/PhotonAIStudio(.exe)`: a single file with Node and the UI embedded (Node SEA). Build it on each target OS.
+Publishing a GitHub Release runs [`.github/workflows/release.yml`](.github/workflows/release.yml), which builds the Windows, macOS and Linux executables and attaches them to the release automatically.
 The executable is not code-signed. On first launch Windows SmartScreen may show "Windows protected your PC" (click *More info → Run anyway*), and macOS may require right-click → *Open*.
 
 ## Security & privacy

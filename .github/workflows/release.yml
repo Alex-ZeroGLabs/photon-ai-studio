@@ -1,0 +1,49 @@
+# Builds the single-file executable on each OS and attaches it to the GitHub Release.
+name: Build release binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach the binaries to (e.g. v1.0.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            built: dist/PhotonAIStudio.exe
+            asset: PhotonAIStudio-windows-x64.exe
+          - os: macos-latest
+            built: dist/PhotonAIStudio
+            asset: PhotonAIStudio-macos-arm64
+          - os: ubuntu-latest
+            built: dist/PhotonAIStudio
+            asset: PhotonAIStudio-linux-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build single executable
+        run: node build/build.js
+      - name: Rename
+        shell: bash
+        run: |
+          mv "${{ matrix.built }}" "dist/${{ matrix.asset }}"
+          chmod +x "dist/${{ matrix.asset }}" || true
+      - name: Upload to release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" "dist/${{ matrix.asset }}" --clobber --repo "${{ github.repository }}"
