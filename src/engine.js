@@ -27,6 +27,9 @@ const CUSTOM_NODES = [
   { name: 'ComfyUI_IPAdapter_plus', url: 'https://github.com/cubiq/ComfyUI_IPAdapter_plus/archive/refs/heads/main.zip' },
 ];
 
+const EXTRA_PIP = ['opencv-python-headless'];
+const EXTRAS_VERSION = 1;
+
 const HF = 'https://huggingface.co/';
 /** Model packs. `dir` is relative to ComfyUI/models. Sizes in bytes (checked on download). */
 const PACKS = {
@@ -246,6 +249,7 @@ class Engine {
         mark.engine = { at: new Date().toISOString(), torch };
         fs.writeFileSync(d.marker, JSON.stringify(mark, null, 2));
       }
+      await this.ensureExtras();
       this.writeExtraPaths();
 
       // 7. models
@@ -266,6 +270,20 @@ class Engine {
   }
 
   cancel() { this.cancelled = true; }
+
+  /**
+   * Python packages some custom nodes import without declaring them (comfyui-inpaint-nodes needs cv2).
+   * Bump EXTRAS_VERSION when the list changes: existing installs are repaired on the next start.
+   */
+  async ensureExtras() {
+    const mark = this.installed();
+    if (!mark?.engine || mark.extras === EXTRAS_VERSION) return;
+    const env = { UV_PYTHON_INSTALL_DIR: this.dirs.pyInstall, UV_CACHE_DIR: path.join(this.root, 'cache', 'uv'), UV_LINK_MODE: 'copy' };
+    this.progress('deps', 0, { label: 'extras' });
+    await this.exec(this.dirs.uv, ['pip', 'install', '--python', this.python, ...EXTRA_PIP], { env }, 'extra packages');
+    mark.extras = EXTRAS_VERSION;
+    fs.writeFileSync(this.dirs.marker, JSON.stringify(mark, null, 2));
+  }
 
   /** Lets ComfyUI also read models from folders the user already has (e.g. another ComfyUI). */
   writeExtraPaths() {
@@ -293,6 +311,7 @@ class Engine {
     if (this.state === 'starting') return this._starting;
     this.state = 'starting';
     this._starting = (async () => {
+      await this.ensureExtras();
       this.writeExtraPaths();
       fs.mkdirSync(this.dirs.logs, { recursive: true });
       const log = fs.openSync(path.join(this.dirs.logs, 'comfyui.log'), 'w');

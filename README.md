@@ -13,6 +13,41 @@ Photoshop-style AI tools for **[Photon Studio](https://tenzen.studio/photon/)**.
 
 Every result is added as a **new, non-destructive layer**. When there is a selection, the layer gets a soft layer mask and an automatic seam color match.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/panel-generative.png" width="32%" alt="Generative tools panel">
+  <img src="docs/screenshots/panel-neural.png" width="32%" alt="Neural filters panel">
+  <img src="docs/screenshots/panel-tools.png" width="32%" alt="Background and super resolution tools">
+</p>
+
+### Examples
+All images below were made in Photon Studio with Photon AI Studio on a local GPU, using the default RealVisXL model.
+
+**Generate Image**: *"photo of a cozy wooden cabin on the shore of a calm mountain lake at sunrise…"*
+
+![Generate Image](docs/screenshots/generate.jpg)
+
+**Generative Fill**: select an area of water, then *"a small red wooden canoe floating on the calm lake"*
+
+| Before | After |
+|---|---|
+| ![Before](docs/screenshots/fill-before.jpg) | ![After](docs/screenshots/fill-after.jpg) |
+
+**Generative Expand** from 3:2 to 16:9 (the canvas grows and the AI completes the forest and the lake)
+
+![Generative Expand](docs/screenshots/expand.jpg)
+
+**Neural Filters → Landscape Mixer** (Winter)
+
+![Landscape Mixer: winter](docs/screenshots/landscape-winter.jpg)
+
+### Guided setup
+<p align="center">
+  <img src="docs/screenshots/setup-hardware.png" width="45%" alt="Hardware check">
+  <img src="docs/screenshots/setup-packs.png" width="45%" alt="Model packs">
+</p>
+
 ## How it works
 
 Photon has no plugin API with network access (UXP/JSX scripts run in a sandbox), but it ships an **official automation CLI** (`photon`). Photon AI Studio is a companion app with a side panel:

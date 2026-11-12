@@ -86,7 +86,7 @@ textarea { resize: vertical; min-height: 38px; }
 .notes li::before { position: absolute; left: 2px; } .notes li.ok::before { content: '✓'; color: var(--ok); } .notes li.warn::before { content: '!'; color: var(--warn); font-weight: 700; left: 6px; } .notes li.bad::before { content: '✕'; color: var(--bad); }
 .pack { display: flex; gap: 10px; align-items: flex-start; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; margin: 6px 0; cursor: pointer; }
 .pack.fixed { cursor: default; color: var(--muted); } .pack.done { opacity: .75; }
-.pack input { margin-top: 3px; } .pack p { margin: 3px 0 0; }
+.pack input { margin-top: 3px; } .pack p { margin: 3px 0 0; } .pack > div { flex: 1; min-width: 0; }
 .pack em { font-style: normal; font-size: 10.5px; padding: 1px 6px; border-radius: 99px; margin-left: 4px; }
 .pack em.rec { background: #163a2b; color: #a8f0cd; } .pack em.warn { background: #3a2f1a; color: #f6d79a; } .pack em.ok { background: #1a3150; color: #b6d0ff; }
 .pack .size { float: right; color: var(--muted); font-size: 12px; }

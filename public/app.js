@@ -92,7 +92,7 @@
   function renderHw(h, el, compact) {
     const lvl = `<div class="level ${h.level}"><b>${t('level.' + h.level)}</b>${compact ? '' : `<span>${t('level.' + h.level + '.d')}</span>`}</div>`;
     const notes = h.notes.map(n => `<li class="${n.t}">${esc(t(n.k, n.v))}</li>`).join('');
-    const sys = `<div class="sys small muted">${esc(h.system.cpu.trim())} · ${h.system.cores} thread · ${esc(h.system.os)}</div>`;
+    const sys = `<div class="sys small muted">${esc(h.system.cpu.trim())} · ${h.system.cores} threads · ${esc(h.system.os)}</div>`;
     el.innerHTML = lvl + `<ul class="notes">${notes}</ul>` + sys;
   }
 
@@ -101,6 +101,7 @@
     hwInfo = await api('/api/hardware');
     renderHw(hwInfo, $('#hw-card'));
     $('#ws1-next').disabled = false;
+    if (new URLSearchParams(location.hash.slice(1)).get('step') === '2') { wizardStep(2); await renderPacks(); }
   }
 
   const PACK_ORDER = ['base', 'style', 'anime', 'zimage'];
@@ -179,10 +180,20 @@
   }
 
   // ---------------------------------------------------------------- main
+  function selectTab(name) {
+    if (!$(`.tabs button[data-tab="${name}"]`)) return;
+    $$('.tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === name));
+    $$('.tab').forEach(tb => { tb.hidden = tb.id !== 'tab-' + name; });
+  }
+
   async function enterMain() {
     show('main');
     await refreshStatus();
-    loadModels();
+    await loadModels();
+    // Deep links: #tab=neural|tools, #open=<filter id> (used for docs screenshots too).
+    const h = new URLSearchParams(location.hash.slice(1));
+    if (h.get('tab')) selectTab(h.get('tab'));
+    if (h.get('open')) { const d = $(`#filters details[data-id="${h.get('open')}"]`); if (d) d.open = true; }
   }
 
   function docKey() { return $('#doc-select').value; }
@@ -339,10 +350,7 @@
         $('#ext-msg').textContent = t('setup.connected'); setTimeout(enterMain, 600);
       } catch (e) { $('#ext-msg').textContent = t('setup.notReachable') + ' — ' + errText(e); await api('/api/config', { method: 'POST', body: { engineMode: 'managed', setupDone: false } }).catch(() => {}); }
     };
-    $$('.tabs button').forEach(b => b.onclick = () => {
-      $$('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-      $$('.tab').forEach(tb => { tb.hidden = tb.id !== 'tab-' + b.dataset.tab; });
-    });
+    $$('.tabs button').forEach(b => b.onclick = () => selectTab(b.dataset.tab));
     $('#doc-select').onchange = e => localStorage.setItem('pas.doc', e.target.value);
     $('#model-select').onchange = e => localStorage.setItem('pas.model', e.target.value);
     $$('#ex-ratio button').forEach(b => b.onclick = () => {

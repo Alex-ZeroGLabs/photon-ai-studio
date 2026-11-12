@@ -42,11 +42,16 @@ const STYLES = {
   vangogh: 'post-impressionist painting in the style of van gogh, swirling brush strokes', popart: 'pop art, bold flat colors, halftone dots',
   cyberpunk: 'cyberpunk, neon lights, futuristic, cinematic', vintage: 'vintage film photo, kodak portra, film grain, faded colors',
 };
+// [prompt, negative]: the season leads the prompt with extra weight, the negative pushes away its opposite.
 const LANDSCAPE = {
-  winter: 'winter landscape, snow covered, frost, cold light', autumn: 'autumn, orange and red foliage, fallen leaves, warm light',
-  spring: 'spring, blooming flowers, fresh green leaves, cherry blossoms', summer: 'summer, lush green, bright sunny day, blue sky',
-  sunset: 'golden hour sunset, warm orange sky, long shadows', night: 'night scene, moonlight, dark blue sky, stars, city lights',
-  fog: 'misty foggy atmosphere, soft diffused light', storm: 'dramatic stormy sky, dark clouds, moody light',
+  winter: ['(winter:1.3), (heavy snow covering the ground, trees and roofs:1.3), frozen, frost, cold blue light, overcast winter sky', 'summer, autumn, green grass, orange foliage, warm light'],
+  autumn: ['(autumn:1.3), (orange, red and yellow foliage:1.2), fallen leaves, warm soft light', 'winter, snow, summer, spring blossoms'],
+  spring: ['(spring:1.3), (blooming flowers, fresh light green leaves:1.2), cherry blossoms, soft daylight', 'winter, snow, autumn, dry grass'],
+  summer: ['(summer:1.3), (lush vivid green vegetation:1.2), bright sunny day, clear blue sky', 'winter, snow, autumn, orange foliage, overcast'],
+  sunset: ['(golden hour sunset:1.3), warm orange and pink sky, long shadows, glowing light', 'midday, flat light, overcast'],
+  night: ['(night:1.3), (moonlight, dark blue sky, stars:1.2), warm lit windows, long exposure', 'daylight, sun, bright sky'],
+  fog: ['(dense fog:1.3), misty atmosphere, soft diffused light, low visibility, muted colors', 'clear sky, harsh light, high contrast'],
+  storm: ['(dramatic storm:1.3), dark thunder clouds, moody light, wind, rain', 'clear sky, sunny, calm'],
 };
 const EXPRESSIONS = { smile: 'smiling, happy expression', bigsmile: 'laughing, big smile, teeth', surprise: 'surprised expression, open mouth', angry: 'angry expression, frowning', sad: 'sad expression', neutral: 'neutral expression, relaxed face' };
 const AGES = { '-2': 'child', '-1': 'young, youthful face', 0: '', 1: 'middle-aged, some wrinkles', 2: 'elderly, old, wrinkles, gray hair' };
@@ -319,7 +324,8 @@ class Features {
         prompt = 'artwork';
       }
     }
-    if (f === 'landscape') { prompt = LANDSCAPE[p.season] || LANDSCAPE.winter; d0 = 0.3; d1 = 0.7; }
+    let effectFirst = false;
+    if (f === 'landscape') { [prompt, neg] = LANDSCAPE[p.season] || LANDSCAPE.winter; d0 = 0.4; d1 = 0.8; effectFirst = true; }
     if (f === 'portrait') {
       prompt = ['portrait photo, detailed face', EXPRESSIONS[p.expression] || '', AGES[String(p.age ?? 0)] || '', p.gaze ? 'looking at the camera' : ''].filter(Boolean).join(', ');
       neg = 'deformed face, distorted eyes, bad teeth'; d0 = 0.3; d1 = 0.6;
@@ -332,7 +338,7 @@ class Features {
       if (files[0]) srcName = await this.comfy.upload(files[0], `pas_${job.id}_clean.png`);
     }
     const opts = {
-      ckpt, profile: W.profile(ckpt), positive: [desc, prompt].filter(Boolean).join(', '), negative: neg, ipadapter,
+      ckpt, profile: W.profile(ckpt), positive: (effectFirst ? [prompt, desc] : [desc, prompt]).filter(Boolean).join(', '), negative: neg, ipadapter,
       denoise: d0 + (d1 - d0) * strength, pixels: this.pixels(),
     };
     const seed = rand();
